@@ -35,7 +35,7 @@ def todos():
                  VALUES (?, ?)"""
         cursor = cursor.execute(sql, (new_title, new_status))
         conn.commit()
-        return f"Todo with the id: 0 created successfully", 201
+        return f"Todo with the id: {cursor.lastrowid} created successfully", 201
 
 
 @app.route("/todo/<int:id>", methods=["GET", "PUT", "DELETE"])
