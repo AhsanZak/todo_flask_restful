@@ -6,11 +6,12 @@
 # Create DB
 $ python
 >> from todo import db
+>> from todo.models import *
 >> db.create_all()
 >> exit()
 
 # Run Server (http://localhst:5000)
-python todo.py
+python run.py
 ```
 
 ## Endpoints
@@ -20,3 +21,5 @@ python todo.py
 * POST    /todos
 * PUT     /todo/:id
 * DELETE  /todo/:id
+
+* ADMIN /admin
