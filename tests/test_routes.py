@@ -2,6 +2,7 @@ from flask import Flask, request
 import json
 from todo.routes import configure_routes
 from todo.models import TodoSchema, Todo, todo_schema, todos_schema
+import unittest
 
 def test_base_route():
     app = Flask(__name__)
@@ -14,24 +15,23 @@ def test_base_route():
     assert response.status_code == 200
 
 
-# def test_post_route__success():
-#     app = Flask(__name__)
-#     configure_routes(app)
-#     client = app.test_client()
-#     url = '/todos'
-    
-#     all_todos = Todo.query.all()
-#     result = todos_schema.dump(all_todos)
-    
-#     mock_request_headers = {
-#         'ContentType': 'application/json',
-#         'dataType': 'json'
-#     }
+def test_post_route__success():
+    app = Flask(__name__)
+    configure_routes(app)
+    client = app.test_client()
+    url = '/todos'
 
-#     mock_request_data = result
+    data = {"title":"testing todo", "status":"Noy completed"}
 
-#     response = client.post(url, data=json.dumps(mock_request_data), headers=mock_request_headers)
-#     assert response.status_code == 200
+    response = client.post(url, data)
+    assert response.status_code == 200
+
+
+#Check if Data returned
+def test_todos_data(self):
+    tester = app.test_client(self)
+    response = tester.get("/todo")
+    self.assertTrue(b'title' in response.data)
 
 # def test_get_todos_check_content_type_equals_json():
 #     app = Flask(__name__)
@@ -44,13 +44,16 @@ def test_base_route():
 #     assert response.status_code == 200
 
 
-def test_todo_by_id():
-    app = Flask(__name__)
-    configure_routes(app)
-    client = app.test_client()
-    url='/todo/{}'
-    # For 200 Status
-    response = client.get(url.format(test_todo_by_id))
-    data = json.loads(response.data)
-    assert response.status_code == HTTPStatus.OK
-    # assert data['title']['status'] == ''
+# def test_todo_by_id():
+#     app = Flask(__name__)
+#     configure_routes(app)
+#     client = app.test_client()
+#     url='/todo/{}'
+#     # For 200 Status
+#     response = client.get(url.format(test_todo_by_id))
+#     data = json.loads(response.data)
+#     assert response.status_code == HTTPStatus.OK
+#     # assert data['title']['status'] == ''
+
+
+
