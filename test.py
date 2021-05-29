@@ -7,6 +7,16 @@ except Exception as e:
     print("Something is not right {} ".format(e))
 
 
+def test_post_route__success():
+    client = app.test_client()
+    url = '/todos'
+
+    response = client.post(url, json={'title': 'new title', 'status': 'Not COmpelted'})
+    print(response)
+    assert response.status_code == 200
+
+
+
 class FlaskTest(unittest.TestCase):
 
     # Check for response 200
@@ -27,6 +37,15 @@ class FlaskTest(unittest.TestCase):
         tester = app.test_client(self)
         response = tester.get("/todo")
         self.assertTrue(b'title' in response.data)
+
+        
+    def test_post_route__success(self):
+        tester = app.test_client(self)
+        url = '/todos'
+
+        response = tester.post(url, json={'title': 'new 2nd title', 'status': 'Nott COmpelted'})
+        print(response)
+        self.assertEqual(response.status_code, 200)
 
     # #Check POST to todos
     # API_URL = "http://127.0.0.1:5000"
