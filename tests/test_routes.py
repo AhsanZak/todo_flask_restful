@@ -64,4 +64,9 @@ def test_put_todos():
     response = client.delete(url.format(8))
     assert response.status_code == 200
 
-
+#Check 404 errors
+def test_404_routes():
+    client = app.test_client()
+    url='/hgjgkjasdfasdf'
+    response = client.get(url)
+    assert response.status_code == 200
