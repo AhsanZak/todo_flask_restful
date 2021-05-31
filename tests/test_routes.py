@@ -22,6 +22,11 @@ def test_post_route__success():
     client = app.test_client()
     url = '/todos'
 
+def test_post_route__success():
+    # app = Flask(__name__)
+    # configure_routes(app)
+    client = app.test_client()
+    url = '/todos'
     response = client.post(url, json={"title":"newe title", "status": "Not comopleted"})
     print(response)
     assert response.status_code == 200
@@ -64,4 +69,9 @@ def test_put_todos():
     response = client.delete(url.format(8))
     assert response.status_code == 200
 
-
+#Check 404 errors
+def test_404_routes():
+    client = app.test_client()
+    url='/hgjgkjasdfasdf'
+    response = client.get(url)
+    assert response.status_code == 200

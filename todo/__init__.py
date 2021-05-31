@@ -20,3 +20,4 @@ db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
 from todo import routes
+from todo import error_handlers
