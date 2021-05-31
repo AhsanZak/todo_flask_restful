@@ -49,8 +49,4 @@ def delete_todo(id):
     db.session.delete(todo)
     db.session.commit()
 
-<<<<<<< HEAD
     return todo_schema.jsonify(todo)
-=======
-    return todo_schema.jsonify(todo)
->>>>>>> unitest
