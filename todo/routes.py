@@ -16,10 +16,6 @@ def create_todo():
         status = request.form['status']
         print("Title : ", title)
 
-        if Todo.query.filter_by(title = title) != None:
-            print("This title already exists : ", title)
-            return jsonify({'result':'error'})
-
         new_todo = Todo(title, status)
         db.session.add(new_todo)
         db.session.commit()
