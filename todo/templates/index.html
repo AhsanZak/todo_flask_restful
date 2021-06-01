@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="row">
+    <div class="col-md-12 m-4" style="text-align: center;">
+        <div>
+            <form method="POST">
+                <label for="title" style="font-weight: bolder; font-size: larger;">TODO Title</label>
+                <input type="text" id="title" name="title" placeholder="Enter Todo...">
+                <input type="text" id="status" name="status" placeholder="Status" value="Not Completed">
+                <button class="btn btn-primary" type="submit" id="create">Add</button>
+            </form>
+            <span style="color: red; font-weight: bold;" id="errormsg" ></span>
+        </div>
+    </div>
+
+    <div class="col-md-12">
+    <table class="table table-dark">
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Title</th>
+            <th scope="col">Status</th>
+            <th scope="col">Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for todo in todo_list %}
+        <tr>
+        <td>{{ todo.id }}</td>
+        <td>{{ todo.title }}</td>
+        <td><h5 style="color: red;">{{ todo.status }}</h5></td>
+
+        <td><a class="btn btn-danger" href="/delete/{{ todo.id }}">Delete</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    </div>
+
+</div>
+
+<script>
+    $('#create').click(function (e) {
+        e.preventDefault();
+        let title = $('#title').val()
+        var Data = {
+            title : title,
+            status : $('input[name="status"]').val()
+        }
+        console.log("Title ", title)
+        if (title == '' ) {
+            $('#errormsg').html('Enter a Todo .!')
+        }
+        else {
+            $.ajax({
+            url: 'create-todo',
+            type: "POST",
+            data: Data,
+            dataType: 'JSON',
+            success: function (data) {
+                if (data.result == 'success') {
+
+                    console.log(data.title, data.status)
+                } else {
+                    $('#errormsg').html('Todo Already Exists')
+                }
+            }
+            });
+        }
+        
+    });
+</script>
+{% endblock %}

@@ -7,4 +7,4 @@ dashboard = Blueprint("dashboard", __name__, static_folder="static", template_fo
 @dashboard.route("/admin")
 @dashboard.route("/")
 def adminpanel():
-    return render_template("index.html")
+    return render_template("indexAdmin.html")

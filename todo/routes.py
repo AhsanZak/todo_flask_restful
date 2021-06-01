@@ -1,13 +1,39 @@
-from flask import request, jsonify
+from flask import request, jsonify, render_template, json, redirect, url_for
 from todo import app, db
 from todo.models import TodoSchema, Todo, todo_schema, todos_schema
 
 
 # def configure_routes(app):
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def home():
-    return "<h2>This is home </h2>"
-# Create a Product
+    todo_list = Todo.query.all()
+    return render_template('index.html', todo_list=todo_list)
+
+@app.route('/create-todo', methods=['POST'])
+def create_todo():
+    if request.method == 'POST':
+        title = request.form['title']
+        status = request.form['status']
+        print("Title : ", title)
+
+        if Todo.query.filter_by(title = title) != None:
+            print("This title already exists : ", title)
+            return jsonify({'result':'error'})
+
+        new_todo = Todo(title, status)
+        db.session.add(new_todo)
+        db.session.commit()
+        return jsonify({'result':'success', 'title':title, 'status': status})
+
+@app.route("/delete/<int:todo_id>")
+def delete(todo_id):
+    todo = Todo.query.filter_by(id=todo_id).first()
+    db.session.delete(todo)
+    db.session.commit()
+    return redirect(url_for("home"))
+
+# API'S
+# Create a Todo
 @app.route('/todos', methods=['POST'])
 def add_todo():
     title = request.json['title']
@@ -17,6 +43,7 @@ def add_todo():
     db.session.commit()
     return todo_schema.jsonify(new_todo)
 
+# Get all Todo's
 @app.route('/todo', methods=['GET'])
 def get_todos():
     all_todos = Todo.query.all()
