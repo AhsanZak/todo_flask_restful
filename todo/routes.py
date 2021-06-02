@@ -27,6 +27,14 @@ def create_todo():
             return jsonify({'result':'error'})
 
 
+@app.route('/update-todo', methods=['POST'])
+def update():
+    todo = Todo.query.filter_by(id=request.form['id']).first()
+    todo.status = request.form['status']
+    db.session.commit()
+    return jsonify({'result':'success', 'status':todo.status})
+
+
 @app.route("/delete/<int:todo_id>")
 def delete(todo_id):
     todo = Todo.query.filter_by(id=todo_id).first()

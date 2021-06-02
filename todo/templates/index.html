@@ -24,6 +24,8 @@
             <th scope="col">ID</th>
             <th scope="col">Title</th>
             <th scope="col">Status</th>
+            <th></th>
+            <th scope="col">Update</th>
             <th scope="col">Delete</th>
           </tr>
         </thead>
@@ -32,8 +34,9 @@
         <tr>
         <td>{{ todo.id }}</td>
         <td>{{ todo.title }}</td>
-        <td><h6 style="color: red;">{{ todo.status }}</h6></td>
-
+        <td><input type="text" id="statusInput{{ todo.id }}" name="status" value="{{ todo.status }}"></td>
+        <td><span id="span{{ todo.id }}"></span></td>
+        <td><a class="btn btn-primary updateButton" todo_id="{{ todo.id }}" href="/update">Update</a></td>
         <td><a class="btn btn-danger" href="/delete/{{ todo.id }}">Delete</a></td>
         </tr>
         {% endfor %}
@@ -45,6 +48,43 @@
 </div>
 
 <script>
+    $(document).ready(function() {
+
+        $('.updateButton').on('click', function(e) {
+            e.preventDefault();
+            var todo_id = $(this).attr('todo_id');
+            var status = $('#statusInput'+todo_id).val();
+
+            if (status == ''){
+                $('#span'+todo_id).html("Status not shown").css({'color': 'red'}).fadeOut(1000)
+            }
+
+            else {
+
+                $.ajax({
+                    url: 'update-todo',
+                    type: "POST",
+                    data : { status : status, id : todo_id },
+                    dataType: 'JSON',
+                
+                success: function(data) {
+
+                    if (data.result == 'success'){
+                        console.log("success", data.status)
+                        $('#statusInput'+todo_id).text(data.status);
+                        $('#span'+todo_id).html("Success").css({'color': 'green'}).fadeOut(2000)
+                    }
+                    else{
+                        console.log("error")
+                    }
+                }
+
+                });
+        }
+        });
+
+    });
+
     $('#create').click(function (e) {
         e.preventDefault();
         let title = $('#title').val()
