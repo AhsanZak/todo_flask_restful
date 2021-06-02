@@ -9,17 +9,23 @@ def home():
     todo_list = Todo.query.all()
     return render_template('index.html', todo_list=todo_list)
 
-@app.route('/create-todo', methods=['POST'])
+@app.route('/create-todo', methods=['POST', 'GET'])
 def create_todo():
     if request.method == 'POST':
-        title = request.form['title']
-        status = request.form['status']
-        print("Title : ", title)
+        new_title = request.form['title']
+        new_status = request.form['status']
 
-        new_todo = Todo(title, status)
-        db.session.add(new_todo)
-        db.session.commit()
-        return jsonify({'result':'success', 'title':title, 'status': status})
+        #Check  if Todo Already exist or not
+        if  Todo.query.filter_by(title=new_title).count() == 0:
+            new_todo = Todo(new_title, new_status)
+            db.session.add(new_todo)
+            db.session.commit()
+            print("New Todo Created")
+            return jsonify({'result':'success', 'title':new_title, 'status': new_status})
+        else:
+            print("Error, Todo Already exist")
+            return jsonify({'result':'error'})
+
 
 @app.route("/delete/<int:todo_id>")
 def delete(todo_id):

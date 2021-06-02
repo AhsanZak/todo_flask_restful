@@ -57,6 +57,7 @@
             $('#errormsg').html('Enter a Todo .!')
         }
         else {
+            console.log("Todo Entered")
             $.ajax({
             url: 'create-todo',
             type: "POST",
@@ -65,7 +66,7 @@
             success: function (data) {
                 if (data.result == 'success') {
                     window.location.reload()
-                    console.log(data.title, data.status)
+                    console.log(data.new_todo.title, data.status)
                 } else {
                     $('#errormsg').html('Todo Already Exists')
                 }
