@@ -1,4 +1,4 @@
-from flask import request, jsonify, render_template, json, redirect, url_for
+from flask import request, jsonify, render_template, json, redirect, url_for, abort
 from todo import app, db
 from todo.models import TodoSchema, Todo, todo_schema, todos_schema
 
@@ -48,10 +48,16 @@ def delete(todo_id):
 def add_todo():
     title = request.json['title']
     status = request.json['status']
-    new_todo = Todo(title, status)
-    db.session.add(new_todo)
-    db.session.commit()
-    return todo_schema.jsonify(new_todo)
+
+    if  Todo.query.filter_by(title=title).count() == 0:
+        new_todo = Todo(title, status)
+        db.session.add(new_todo)
+        db.session.commit()
+        return todo_schema.jsonify(new_todo)
+    else:
+        print("Error, Todo Already exist")
+        return jsonify({'result':'error'})
+
 
 # Get all Todo's
 @app.route('/todo', methods=['GET'])
@@ -63,27 +69,41 @@ def get_todos():
 # Get Single Todo
 @app.route('/todo/<id>', methods=['GET'])
 def get_todo(id):
-    todo = Todo.query.get(id)
-    return todo_schema.jsonify(todo)
+    if  Todo.query.filter_by(id=id).count() != 0:
+        todo = Todo.query.get(id)
+        return todo_schema.jsonify(todo)
+    else:
+        abort(400, description="Resource not found")
 
+    
 # Update a Todo
 @app.route('/todo/<id>', methods=['PUT'])
 def update_todo(id):
-    todo = Todo.query.get(id)
+    if  Todo.query.filter_by(id=id).count() != 0:
+        todo = Todo.query.get(id)
+        title = request.json['title']
+        status = request.json['status']
+        if  Todo.query.filter_by(title=title).count() == 0 or todo.title == title:
+            todo.title = title
+            todo.status = status
+            db.session.commit()
+            return todo_schema.jsonify(todo)
+        else:
+            return jsonify({'result':'Todo already exists with that title'})
+    else:
+        abort(400, description="Resource not found")
 
-    title = request.json['title']
-    status = request.json['status']
-
-    todo.title = title
-    todo.status = status
-    db.session.commit()
-    return todo_schema.jsonify(todo)
+    
 
 # Delete Todo
 @app.route('/todo/<id>', methods=['DELETE'])
 def delete_todo(id):
-    todo = Todo.query.get(id)
-    db.session.delete(todo)
-    db.session.commit()
+    if  Todo.query.filter_by(id=id).count() != 0:
+        todo = Todo.query.get(id)
+        db.session.delete(todo)
+        db.session.commit()
+        return ('', 204)
+    else:
+        abort(400, description="Resource not found")
 
-    return todo_schema.jsonify(todo)
+    

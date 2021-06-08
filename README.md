@@ -16,7 +16,7 @@ python run.py
 
 ## Endpoints
 
-* GET     /todos
+* GET     /todo
 * GET     /todo/:id
 * POST    /todos
 * PUT     /todo/:id
