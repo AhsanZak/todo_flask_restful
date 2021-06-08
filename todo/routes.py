@@ -1,13 +1,39 @@
-from flask import request, jsonify, render_template, json, redirect, url_for, abort
-from todo import app, db
+from flask import request, jsonify, render_template, json, redirect, url_for, abort, session
+from todo import app, db, oauth, google
 from todo.models import TodoSchema, Todo, todo_schema, todos_schema
+from flask_login import current_user
 
 
 # def configure_routes(app):
 @app.route('/', methods=['GET', 'POST'])
 def home():
     todo_list = Todo.query.all()
-    return render_template('index.html', todo_list=todo_list)
+    email = dict(session).get('email', None)
+    print(email)
+    return render_template('index.html', todo_list=todo_list, email=email)
+
+
+@app.route('/login')
+def login():
+    google = oauth.create_client('google')
+    redirect_uri = url_for('authorize', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+@app.route('/authorize')
+def authorize():
+    google = oauth.create_client('google')
+    token = google.authorize_access_token()
+    resp = google.get('userinfo')
+    user_info = resp.json()
+    session['email'] = user_info['email']
+    # do something with the token and profile
+    return redirect('/')
+
+@app.route('/logout')
+def logout():
+    for key in list(session.keys()):
+        session.pop(key)
+    return redirect('/')
 
 @app.route('/create-todo', methods=['POST', 'GET'])
 def create_todo():
