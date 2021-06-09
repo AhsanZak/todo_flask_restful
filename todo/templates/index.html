@@ -108,7 +108,7 @@
                     window.location.reload()
                     console.log(data.new_todo.title, data.status)
                 } else {
-                    $('#errormsg').html('Todo Already Exists')
+                    $('#errormsg').html(data.result)
                 }
             }
             });

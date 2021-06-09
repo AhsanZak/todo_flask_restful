@@ -1,20 +1,48 @@
-from flask import request, jsonify, render_template, json, redirect, url_for, abort, session
-from todo import app, db, oauth, google
-from todo.models import TodoSchema, Todo, todo_schema, todos_schema
-from flask_login import current_user
+from flask import request, jsonify, render_template, json, redirect, url_for, abort, session, flash, redirect
+from todo import app, db, oauth, google, bcrypt
+from todo.models import TodoSchema, Todo, todo_schema, todos_schema, User
+from flask_login import current_user, login_user, logout_user, login_required
+from todo.forms import RegistrationForm, LoginForm
+
 
 
 # def configure_routes(app):
 @app.route('/', methods=['GET', 'POST'])
 def home():
     todo_list = Todo.query.all()
-    email = dict(session).get('email', None)
-    print(email)
-    return render_template('index.html', todo_list=todo_list, email=email)
+    return render_template('index.html', todo_list=todo_list)
+
+@app.route("/register", methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        hashed_pw = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        user = User(username=form.username.data, email=form.email.data, password=hashed_pw)
+        db.session.add(user)
+        db.session.commit()
+        flash('Your account has been created! You can log in.', 'success')
+        return redirect(url_for('login'))
+    return render_template('register.html', form=form)
 
 
-@app.route('/login')
+@app.route("/login", methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and bcrypt.check_password_hash(user.password, form.password.data):
+            login_user(user)
+            return redirect(url_for('home'))
+        else:
+            flash('Login Unsuccessfull. Please check email and password', 'danger')
+    return render_template('login.html', form=form)  
+
+@app.route('/google-login')
+def google_login():
     google = oauth.create_client('google')
     redirect_uri = url_for('authorize', _external=True)
     return google.authorize_redirect(redirect_uri)
@@ -24,33 +52,50 @@ def authorize():
     google = oauth.create_client('google')
     token = google.authorize_access_token()
     resp = google.get('userinfo')
-    user_info = resp.json()
-    session['email'] = user_info['email']
-    # do something with the token and profile
+    print("resp : ", resp)
+    user = resp.json()
+    print("This is user info", user)
+    if not User.query.filter_by(email=user.get('email')):
+        print("user doesnt exists")
+        user = User(username=user.get('name'), email=user.get('email'), password="$#$#$#$2#$@")
+        db.session.add(user)
+        db.session.commit()
+        print("User created")
+    
+    print("User asdfkasdlfkjasdlkfalsdj")
+    # Begin user session by logging the user in
+    login_user(user)
     return redirect('/')
 
-@app.route('/logout')
+@app.route("/logout", methods=['GET', 'POST'])
 def logout():
-    for key in list(session.keys()):
-        session.pop(key)
-    return redirect('/')
+    logout_user()
+    return redirect(url_for('home'))
+
 
 @app.route('/create-todo', methods=['POST', 'GET'])
 def create_todo():
-    if request.method == 'POST':
-        new_title = request.form['title']
-        new_status = request.form['status']
+    if current_user.is_authenticated:
+        if request.method == 'POST':
+            new_title = request.form['title']
+            new_status = request.form['status']
 
-        #Check  if Todo Already exist or not
-        if  Todo.query.filter_by(title=new_title).count() == 0:
-            new_todo = Todo(new_title, new_status)
-            db.session.add(new_todo)
-            db.session.commit()
-            print("New Todo Created")
-            return jsonify({'result':'success', 'title':new_title, 'status': new_status})
-        else:
-            print("Error, Todo Already exist")
-            return jsonify({'result':'error'})
+            #Check  if Todo Already exist or not
+            if  Todo.query.filter_by(title=new_title).count() == 0:
+                new_todo = Todo(new_title, new_status)
+                db.session.add(new_todo)
+                db.session.commit()
+                print("New Todo Created")
+                return jsonify({'result':'success', 'title':new_title, 'status': new_status})
+            else:
+                print("Error, Todo Already exist")
+                error = "Todo Already exists"
+                return jsonify({'result':error})
+    else:
+        print("Not authenticated")
+        error = "Please login to Add Todo"
+        return jsonify({'result':error})
+
 
 
 @app.route('/update-todo', methods=['POST'])
