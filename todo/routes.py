@@ -52,18 +52,14 @@ def authorize():
     google = oauth.create_client('google')
     token = google.authorize_access_token()
     resp = google.get('userinfo')
-    print("resp : ", resp)
-    user = resp.json()
-    print("This is user info", user)
-    if not User.query.filter_by(email=user.get('email')):
-        print("user doesnt exists")
+    user_info = resp.json()
+
+    if User.query.filter_by(email=user_info.get('email')).count() == 0:
         user = User(username=user.get('name'), email=user.get('email'), password="$#$#$#$2#$@")
         db.session.add(user)
         db.session.commit()
-        print("User created")
-    
-    print("User asdfkasdlfkjasdlkfalsdj")
-    # Begin user session by logging the user in
+        
+    user = User.query.filter_by(email=user_info.get('email')).first()
     login_user(user)
     return redirect('/')
 
